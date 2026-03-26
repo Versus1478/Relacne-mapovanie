@@ -17,9 +17,14 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/']
+        ]);
+
         $category = Category::create([
-            'name' => $request->name,
-            'color' => $request->color ?? '#808080'
+            'name' => $validated['name'],
+            'color' => $validated['color'] ?? '#808080'
         ]);
 
         return response()->json([
