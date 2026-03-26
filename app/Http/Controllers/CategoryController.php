@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -56,12 +57,21 @@ class CategoryController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $category->update([
-            'name' => $request->name,
-            'color' => $request->color
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories', 'name')->ignore($category->id)
+            ],
+            'color' => ['nullable', 'regex:/^#[0-9A-Fa-f]{6}$/']
         ]);
 
-        return response()->json(['category' => $category], Response::HTTP_OK);
+        $category->update($validated);
+
+        return response()->json([
+            'category' => $category
+        ], Response::HTTP_OK);
     }
 
     public function destroy(string $id)
